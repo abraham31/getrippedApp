@@ -14,7 +14,7 @@ async def generate_invite(current_user: dict = Depends(get_current_user)):
     token = create_invite_token("nutriologo")
     
     # Construir link dinámico
-    link = f"{settings.APP_URL}/nutriologo/activate?token={token}"
+    link = f"{settings.APP_URL}/nutriologo/activar-nutriologo?token={token}"
     
     return {"invite_link": link}
 

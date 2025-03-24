@@ -4,7 +4,7 @@ from app.core.config import settings
 
 def send_activation_email(to_email: str, activation_token: str):
     # Construir enlace
-    activation_link = f"{settings.APP_URL}/paciente/activate?token={activation_token}"
+    activation_link = f"{settings.APP_URL}/paciente/activar-paciente?token={activation_token}"
 
     subject = "Activa tu cuenta"
     body = f"""
