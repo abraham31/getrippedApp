@@ -7,7 +7,8 @@ async def create_nutriologo(data: dict):
         "email": data["email"],
         "password": hash_password(data["password"]),
         "curp": data["curp"],
-        "role": "nutriologo"
+        "role": "nutriologo",
+        "is_active": True  # <- Aquí!
     }
     await db.usuarios.insert_one(user)
     return {"msg": "Nutriólogo creado correctamente"}
@@ -16,8 +17,13 @@ async def authenticate_user(email: str, password: str):
     user = await db.usuarios.find_one({"email": email})
     if not user:
         return None
+
     if not verify_password(password, user["password"]):
         return None
+    
+    if not user.get("is_active", False):
+        return None     
+    # Aquí generamos el token JWT
     token_data = {
         "sub": str(user["_id"]),
         "role": user["role"]
