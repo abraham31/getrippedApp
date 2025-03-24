@@ -1,6 +1,6 @@
 from app.core.database import db
 from app.core.security import create_activation_token, verify_activation_token, hash_password
-from email_service import send_activation_email
+from app.services.email_service import send_activation_email
 from bson import ObjectId
 
 async def create_paciente(data: dict, nutriologo_id: str):
