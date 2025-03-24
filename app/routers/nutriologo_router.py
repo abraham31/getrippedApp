@@ -9,8 +9,8 @@ from app.core.database import db
 
 router = APIRouter(prefix="/nutriologo", tags=["Nutriólogo"])
 
-@router.post("/register")
-async def register_nutriologo(
+@router.post("/activate")
+async def activate_nutriologo(
     data: NutriologoCreate, token: str = Query(...)
 ):
     try:
