@@ -13,6 +13,7 @@ async def create_paciente(data: dict, nutriologo_id: str):
         "nutriologo_id": nutriologo_id,
         "role": "paciente",
         "is_active": False,
+        "is_deleted": False,
         "password": None
     })
 

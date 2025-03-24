@@ -1,7 +1,8 @@
-from fastapi import Depends, Path, APIRouter, HTTPException, Query
+from fastapi import Depends, Path, Body, APIRouter, HTTPException, Query
 from bson import ObjectId
 from app.dependencies import get_current_user, require_role
 from app.schemas.nutriologo import NutriologoCreate
+from app.schemas.paciente import PacienteUpdate
 from app.core.security import verify_invite_token
 from app.services.user_service import create_nutriologo
 from app.core.database import db
@@ -29,6 +30,7 @@ async def listar_pacientes(current_user: dict = Depends(get_current_user)):
 
     pacientes_cursor = db.usuarios.find({
         "nutriologo_id": current_user["sub"],
+        "is_deleted": False,
         "role": "paciente"
     })
 
@@ -53,6 +55,7 @@ async def obtener_paciente(
     paciente = await db.usuarios.find_one({
         "_id": ObjectId(paciente_id),
         "nutriologo_id": current_user["sub"],
+        "is_deleted": False,
         "role": "paciente"
     })
 
@@ -68,3 +71,80 @@ async def obtener_paciente(
     }
 
     return paciente_info
+
+@router.delete("/pacientes/{paciente_id}")
+async def eliminar_paciente(
+    paciente_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "nutriologo_id": current_user["sub"],
+        "role": "paciente"
+    })
+
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    await db.usuarios.update_one(
+        {"_id": ObjectId(paciente_id)},
+        {"$set": {"is_deleted": True, "is_active": False}}
+    )
+
+    return {"msg": "Paciente eliminado correctamente"}
+
+@router.put("/pacientes/{paciente_id}/status")
+async def cambiar_status_paciente(
+    paciente_id: str,
+    status: dict = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "nutriologo_id": current_user["sub"],
+        "role": "paciente"
+    })
+
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    await db.usuarios.update_one(
+        {"_id": ObjectId(paciente_id)},
+        {"$set": {"is_active": status.get("is_active", False)}}
+    )
+
+    return {"msg": "Estado actualizado correctamente"}
+
+@router.put("/pacientes/{paciente_id}")
+async def editar_paciente(
+    paciente_id: str,
+    data: PacienteUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "nutriologo_id": current_user["sub"],
+        "role": "paciente"
+    })
+
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    # Solo actualizamos campos enviados
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No se enviaron datos para actualizar")
+
+    await db.usuarios.update_one(
+        {"_id": ObjectId(paciente_id)},
+        {"$set": update_data}
+    )
+
+    return {"msg": "Paciente actualizado correctamente"}
