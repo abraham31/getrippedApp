@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.security import HTTPBearer
 from fastapi.openapi.utils import get_openapi
-from app.routers import admin_router, auth_router, paciente_router
+from app.routers import admin_router, auth_router, paciente_router, nutriologo_router
 
 app = FastAPI(title="API Nutrición")
 
@@ -9,6 +9,7 @@ app = FastAPI(title="API Nutrición")
 app.include_router(admin_router.router)
 app.include_router(auth_router.router)
 app.include_router(paciente_router.router)
+app.include_router(nutriologo_router.router)
 
 # Seguridad para Swagger (HTTP Bearer)
 bearer_scheme = HTTPBearer()
