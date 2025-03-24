@@ -20,7 +20,7 @@ async def registrar_paciente(
         "activation_token": result["activation_token"]
     }
 
-@router.post("/activate-account")
+@router.post("/register-paciente")
 async def activar_cuenta(token: str, data: PacienteActivate):
     result = await activate_paciente(token, data.password)
     if "error" in result:

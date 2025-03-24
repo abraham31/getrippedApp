@@ -4,34 +4,28 @@ from app.services.email_service import send_activation_email
 from bson import ObjectId
 
 async def create_paciente(data: dict, nutriologo_id: str):
-    # Verificar si ya existe paciente con ese email
     existing = await db.usuarios.find_one({"email": data["email"]})
     if existing:
         return {"error": "Email ya registrado"}
 
-    paciente = {
-        "nombre": data["nombre"],
-        "email": data["email"],
-        "role": "paciente",
+    paciente = data.copy()
+    paciente.update({
         "nutriologo_id": nutriologo_id,
+        "role": "paciente",
         "is_active": False,
         "password": None
-    }
+    })
 
     result = await db.usuarios.insert_one(paciente)
 
-    # Generar token de activación
     activation_token = create_activation_token(str(result.inserted_id))
 
-    # Enviar correo al paciente
     try:
         send_activation_email(data["email"], activation_token)
     except:
         return {"error": "Error enviando email"}
 
-    return {
-        "msg": "Paciente creado, email de activación enviado."
-    }
+    return {"msg": "Paciente creado, email enviado."}
 
 async def activate_paciente(token: str, password: str):
     try:
