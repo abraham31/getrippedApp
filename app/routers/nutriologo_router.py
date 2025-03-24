@@ -1,11 +1,14 @@
+from typing import List
 from fastapi import Depends, Path, Body, APIRouter, HTTPException, Query
 from bson import ObjectId
 from app.dependencies import get_current_user, require_role
 from app.schemas.nutriologo import NutriologoCreate
 from app.schemas.paciente import PacienteUpdate, PacienteCreate
+from app.schemas.progreso import ProgresoCreate, ProgresoResponse
 from app.core.security import verify_invite_token
 from app.services.user_service import create_nutriologo
 from app.services.paciente_service import create_paciente
+from app.services.progreso_service import registrar_progreso
 from app.core.database import db
 
 router = APIRouter(prefix="/nutriologo", tags=["Nutriólogo"])
@@ -164,3 +167,55 @@ async def editar_paciente(
     )
 
     return {"msg": "Paciente actualizado correctamente"}
+
+@router.post("/pacientes/{paciente_id}/progreso")
+async def registrar_avance(
+    paciente_id: str = Path(..., description="ID del paciente"),
+    data: ProgresoCreate = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    resultado = await registrar_progreso(paciente_id, current_user["sub"], data.dict())
+
+    if "error" in resultado:
+        raise HTTPException(status_code=404, detail=resultado["error"])
+
+    return resultado
+
+@router.get("/pacientes/{paciente_id}/progreso", response_model=List[ProgresoResponse])
+async def obtener_historial_progreso(
+    paciente_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "nutriologo_id": current_user["sub"],
+        "role": "paciente",
+        "is_deleted": False
+    })
+
+    if not paciente:
+        raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    # Consultar los progresos ordenados por fecha
+    progresos_cursor = db.progresos.find(
+        {"paciente_id": ObjectId(paciente_id)},
+        sort=[("fecha", 1)]  # Orden cronológico
+    )
+
+    progresos = []
+    async for progreso in progresos_cursor:
+        progresos.append({
+            "id": str(progreso["_id"]),
+            "fecha": progreso["fecha"],
+            "peso": progreso["peso"],
+            "estatura": progreso.get("estatura"),
+            "circunferencia_cintura": progreso.get("circunferencia_cintura"),
+            "porcentaje_grasa_corporal": progreso.get("porcentaje_grasa_corporal"),
+            "observaciones": progreso.get("observaciones")
+        })
+
+    return progresos
