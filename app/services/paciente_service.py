@@ -12,33 +12,6 @@ async def create_paciente(data: dict, nutriologo_id: str):
     paciente = {
         "nombre": data["nombre"],
         "email": data["email"],
-        "curp": data["curp"],
-        "role": "paciente",
-        "nutriologo_id": nutriologo_id,
-        "is_active": False,
-        "password": None  # Se establecerá cuando el paciente active su cuenta
-    }
-
-    result = await db.usuarios.insert_one(paciente)
-
-    # Generar token de activación
-    activation_token = create_activation_token(str(result.inserted_id))
-    
-    return {
-        "msg": "Paciente creado",
-        "activation_token": activation_token  # Temporal, luego enviaremos por correo
-    }
-
-async def create_paciente(data: dict, nutriologo_id: str):
-    # Verificar si ya existe paciente con ese email
-    existing = await db.usuarios.find_one({"email": data["email"]})
-    if existing:
-        return {"error": "Email ya registrado"}
-
-    paciente = {
-        "nombre": data["nombre"],
-        "email": data["email"],
-        "curp": data["curp"],
         "role": "paciente",
         "nutriologo_id": nutriologo_id,
         "is_active": False,

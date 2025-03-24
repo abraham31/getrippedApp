@@ -14,7 +14,7 @@ async def register_nutriologo(
     try:
         verify_invite_token(token)
     except:
-        raise HTTPException(status_code=400, detail="Token inválido o expirado")
+        raise HTTPException(status_code=400, detail="Token inválido o expirado, solicite uno nuevo")
     
     existing_user = await db.usuarios.find_one({"email": data.email})
     if existing_user:
