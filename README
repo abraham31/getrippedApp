@@ -1,0 +1,16 @@
+app/
+├── core/
+│   ├── config.py          # Variables como SECRET_KEY y expiración
+│   └── security.py        # Funciones para generar y validar tokens (incluye invitación)
+│
+├── routers/
+│   ├── admin_router.py    # Endpoint para generar el enlace
+│   └── auth_router.py     # Endpoint para registrar nutriólogo usando el token
+│
+├── schemas/
+│   └── nutriologo.py      # Esquema para recibir datos del nutriólogo
+│
+├── services/
+│   └── user_service.py    # Lógica para crear el nutriólogo
+│
+└── main.py                # Cargar routers
