@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query
-from schemas.nutriologo import NutriologoCreate
-from schemas.auth import LoginRequest, TokenResponse
-from core.security import verify_invite_token
-from services.user_service import create_nutriologo, authenticate_user
-from core.database import db
+from app.schemas.nutriologo import NutriologoCreate
+from app.schemas.auth import LoginRequest, TokenResponse
+from app.core.security import verify_invite_token
+from app.services.user_service import create_nutriologo, authenticate_user
+from app.core.database import db
 
 router = APIRouter(tags=["Auth"])
 

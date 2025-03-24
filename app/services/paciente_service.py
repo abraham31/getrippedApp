@@ -1,5 +1,5 @@
-from core.database import db
-from core.security import create_activation_token, verify_activation_token, hash_password
+from app.core.database import db
+from app.core.security import create_activation_token, verify_activation_token, hash_password
 from email_service import send_activation_email
 from bson import ObjectId
 

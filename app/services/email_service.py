@@ -1,6 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
-from core.config import settings
+from app.core.config import settings
 
 def send_activation_email(to_email: str, activation_token: str):
     # Construir enlace

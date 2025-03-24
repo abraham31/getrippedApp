@@ -1,5 +1,5 @@
-from core.database import db
-from core.security import hash_password, verify_password, create_access_token
+from app.core.database import db
+from app.core.security import hash_password, verify_password, create_access_token
 
 async def create_nutriologo(data: dict):
     user = {

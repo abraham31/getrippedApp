@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.paciente import PacienteCreate, PacienteActivate
-from services.paciente_service import create_paciente, activate_paciente
+from app.schemas.paciente import PacienteCreate, PacienteActivate
+from app.services.paciente_service import create_paciente, activate_paciente
 from app.dependencies import get_current_user, require_role
 
 router = APIRouter(prefix="/nutriologo", tags=["Pacientes"])

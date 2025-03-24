@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header, HTTPException
-from core.security import create_invite_token
-from core.config import settings
+from app.core.security import create_invite_token
+from app.core.config import settings
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
