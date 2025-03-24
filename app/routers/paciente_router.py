@@ -3,7 +3,7 @@ from app.schemas.paciente import PacienteCreate, PacienteActivate
 from app.services.paciente_service import create_paciente, activate_paciente
 from app.dependencies import get_current_user, require_role
 
-router = APIRouter(prefix="/nutriologo", tags=["Pacientes"])
+router = APIRouter(prefix="/paciente", tags=["Pacientes"])
 
 @router.post("/pacientes")
 async def registrar_paciente(
@@ -20,7 +20,7 @@ async def registrar_paciente(
         "activation_token": result["activation_token"]
     }
 
-@router.post("/activate")
+@router.post("/activar-paciente")
 async def activar_cuenta(token: str, data: PacienteActivate):
     result = await activate_paciente(token, data.password)
     if "error" in result:
