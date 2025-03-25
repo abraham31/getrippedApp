@@ -13,57 +13,112 @@ async def registrar_progreso(paciente_id: str, nutriologo_id: str, data: dict):
     if not paciente:
         return {"error": "Paciente no encontrado"}
 
-    # Buscar último progreso registrado (si existe)
+    # Buscar último progreso registrado
     ultimo_progreso = await db.progresos.find_one(
         {"paciente_id": ObjectId(paciente_id)},
         sort=[("fecha", -1)]
     )
 
-    # Comparativa
-    if ultimo_progreso:
-        comparacion = {
-            "peso_anterior": ultimo_progreso["peso"],
-            "peso_actual": data["peso"],
-            "diferencia_peso": round(data["peso"] - ultimo_progreso["peso"], 2)
-        }
-    else:
-        comparacion = {
-            "peso_inicial": paciente["peso"],
-            "peso_actual": data["peso"],
-            "diferencia_peso": round(data["peso"] - paciente["peso"], 2)
-        }
+    es_primera_consulta = ultimo_progreso is None
+    comparacion = {}
 
-    # Insertar progreso
-    progreso = data.copy()
-    progreso.update({
+    # Construir documento de progreso
+    progreso = {
         "paciente_id": ObjectId(paciente_id),
         "nutriologo_id": ObjectId(nutriologo_id),
-        "fecha": data.get("fecha", datetime.utcnow().date())
-    })
+        "fecha": data.get("fecha", datetime.utcnow().date()),
+        "peso": data["peso"],
+        "masa_muscular": data.get("masa_muscular"),
+        "masa_grasa": data.get("masa_grasa"),
+        "porcentaje_grasa_corporal": data.get("porcentaje_grasa_corporal"),
+        "agua_corporal_total": data.get("agua_corporal_total"),
+        "observaciones": data.get("observaciones")
+    }
 
-    # Después de guardar el progreso
+    # Guardar progreso
     await db.progresos.insert_one(progreso)
 
-    # Generar mensaje motivacional basado en comparativa
-    if "peso_anterior" in comparacion or "peso_inicial" in comparacion:
-        diferencia = comparacion.get("diferencia_peso", 0)
-        if diferencia < 0:
+    # Generar notificación
+    if es_primera_consulta:
+        titulo = "¡Bienvenido a tu seguimiento!"
+        mensaje = "Tu primera consulta ha sido registrada. A partir de ahora haremos seguimiento a tu evolución. 🎯"
+
+        resumen = []
+        if data.get("peso"):
+            resumen.append(f"Peso: {data['peso']} kg")
+        if data.get("masa_muscular") is not None:
+            resumen.append(f"Masa muscular: {data['masa_muscular']} kg")
+        if data.get("masa_grasa") is not None:
+            resumen.append(f"Masa grasa: {data['masa_grasa']} kg")
+        if data.get("porcentaje_grasa_corporal") is not None:
+            resumen.append(f"% grasa corporal: {data['porcentaje_grasa_corporal']}%")
+
+        if resumen:
+            mensaje += "\n\n📝 Resultados iniciales:\n" + "\n".join(resumen)
+
+    else:
+        referencia = ultimo_progreso
+        mensajes = []
+
+        if referencia.get("peso") is not None and data.get("peso") is not None:
+            dif = round(data["peso"] - referencia["peso"], 2)
+            comparacion["peso"] = {
+                "anterior": referencia["peso"],
+                "actual": data["peso"],
+                "diferencia": dif
+            }
+            if dif < 0:
+                mensajes.append(f"Has bajado {abs(dif)} kg de peso.")
+            elif dif > 0:
+                mensajes.append(f"Has subido {dif} kg de peso.")
+
+        if referencia.get("masa_muscular") is not None and data.get("masa_muscular") is not None:
+            dif = round(data["masa_muscular"] - referencia["masa_muscular"], 2)
+            comparacion["masa_muscular"] = {
+                "anterior": referencia["masa_muscular"],
+                "actual": data["masa_muscular"],
+                "diferencia": dif
+            }
+            if dif > 0:
+                mensajes.append(f"Ganaste {dif} kg de masa muscular 💪.")
+
+        if referencia.get("masa_grasa") is not None and data.get("masa_grasa") is not None:
+            dif = round(data["masa_grasa"] - referencia["masa_grasa"], 2)
+            comparacion["masa_grasa"] = {
+                "anterior": referencia["masa_grasa"],
+                "actual": data["masa_grasa"],
+                "diferencia": dif
+            }
+            if dif < 0:
+                mensajes.append(f"Reduciste {abs(dif)} kg de grasa corporal 🔥.")
+
+        if referencia.get("porcentaje_grasa_corporal") is not None and data.get("porcentaje_grasa_corporal") is not None:
+            dif = round(data["porcentaje_grasa_corporal"] - referencia["porcentaje_grasa_corporal"], 2)
+            comparacion["porcentaje_grasa_corporal"] = {
+                "anterior": referencia["porcentaje_grasa_corporal"],
+                "actual": data["porcentaje_grasa_corporal"],
+                "diferencia": dif
+            }
+            if dif < 0:
+                mensajes.append(f"Bajaste {abs(dif)}% de grasa corporal 🏆.")
+
+        if mensajes:
             titulo = "¡Felicidades por tu progreso!"
-            mensaje = f"Desde tu inicio has bajado {abs(diferencia)} kg. ¡Sigue así!"
-        elif diferencia > 0:
-            titulo = "¡Sigamos avanzando!"
-            mensaje = f"Aumentaste {diferencia} kg desde el último registro. ¡Podemos mejorar juntos!"
+            mensaje = " ".join(mensajes)
         else:
-            titulo = "¡Mantenemos el ritmo!"
-            mensaje = "Tu peso se mantiene igual. ¡No te detengas!"
+            titulo = "¡Seguimos trabajando!"
+            mensaje = "No hubo cambios significativos esta vez. ¡Vamos con todo en la próxima consulta!"
 
-        # Guardar notificación en Mongo
-        await db.notificaciones.insert_one({
-            "paciente_id": ObjectId(paciente_id),
-            "titulo": titulo,
-            "mensaje": mensaje,
-            "fecha": datetime.utcnow(),
-            "leido": False
-        })
+    # Guardar notificación
+    await db.notificaciones.insert_one({
+        "paciente_id": ObjectId(paciente_id),
+        "titulo": titulo,
+        "mensaje": mensaje,
+        "fecha": datetime.utcnow(),
+        "leido": False
+    })
 
-    return {"msg": "Progreso registrado", "comparacion": comparacion}
+    return {
+        "msg": "Progreso registrado",
+        "comparacion": comparacion if not es_primera_consulta else "Primera consulta - sin comparación"
+    }
