@@ -28,6 +28,9 @@ class PacienteCreate(BaseModel):
 class PacienteStatusUpdate(BaseModel):
     is_active: bool
 
+class PacienteActivate(BaseModel):
+    password: str = Field(..., min_length=6)
+
 class PacienteUpdate(BaseModel):
     nombre: Optional[str] = None
     peso: Optional[float] = Field(None, gt=0)
