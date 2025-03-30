@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Body
 from bson import ObjectId
 from app.dependencies import get_current_user, require_role
 from app.schemas.paciente import (
-    PacienteCreate, PacienteUpdate,
+    PacienteUpdate,
     PacienteOut, PacienteStatusUpdate
 )
 from app.core.database import db
@@ -11,21 +11,6 @@ from app.services.paciente_service import crear_paciente
 from app.utils.pacientes import obtener_paciente_para_nutriologo
 
 router = APIRouter(tags=["Pacientes"])
-
-@router.post("/pacientes")
-async def registrar_paciente(
-    data: PacienteCreate,
-    current_user: dict = Depends(get_current_user)
-):
-    await require_role("nutriologo", current_user)
-
-    result = await crear_paciente(data.dict(), current_user["sub"])
-    if "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
-    return {
-        "msg": "Paciente registrado. Se debe enviar el enlace de activación.",
-        "activation_token": result["activation_token"]
-    }
 
 @router.get("/pacientes", response_model=List[PacienteOut])
 async def listar_pacientes(current_user: dict = Depends(get_current_user)):

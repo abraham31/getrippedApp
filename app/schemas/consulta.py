@@ -2,12 +2,15 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date
 
+from pydantic import BaseModel, Field
+from typing import Optional
+
 class ProgresoInput(BaseModel):
-    peso: float = Field(..., gt=0)
-    masa_muscular: Optional[float] = Field(None, gt=0)
-    masa_grasa: Optional[float] = Field(None, gt=0)
-    porcentaje_grasa_corporal: Optional[float] = Field(None, gt=0)
-    agua_corporal_total: Optional[float] = Field(None, gt=0)
+    peso: float = Field(..., gt=0, description="Peso actual del paciente en kg")
+    masa_muscular: Optional[float] = Field(None, gt=0, description="Masa muscular actual en kg")
+    masa_grasa: Optional[float] = Field(None, gt=0, description="Masa grasa actual en kg")
+    porcentaje_grasa_corporal: Optional[float] = Field(None, gt=0, description="Porcentaje de grasa corporal actual")
+    agua_corporal_total: Optional[float] = Field(None, gt=0, description="Cantidad de agua corporal total actual en litros o porcentaje")
 
 class ConsultaCreate(BaseModel):
     fecha: Optional[date] = None
