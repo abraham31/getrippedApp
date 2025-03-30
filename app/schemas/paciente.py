@@ -37,3 +37,13 @@ class PacienteUpdate(BaseModel):
     actividad_fisica: Optional[str] = None
     preferencias_alimentarias: Optional[List[str]] = None
     observaciones: Optional[str] = None
+
+class PacienteOut(BaseModel):
+    id: str
+    nombre: str
+    email: EmailStr
+    is_active: bool
+    sexo: Optional[str] = None
+    fecha_nacimiento: Optional[date] = None
+    peso: Optional[float] = None
+    estatura: Optional[float] = None
