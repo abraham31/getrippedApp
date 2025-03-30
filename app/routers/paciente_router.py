@@ -8,7 +8,7 @@ from app.services.paciente_service import activate_paciente
 from bson import ObjectId
 from app.core.database import db
 
-router = APIRouter(prefix="/paciente", tags=["Pacientes"])
+router = APIRouter(prefix="/paciente", tags=["Paciente (App)"])
 
 @router.post("/activar-paciente")
 async def activar_cuenta(token: str, data: PacienteActivate):

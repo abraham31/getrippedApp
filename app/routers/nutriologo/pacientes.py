@@ -10,7 +10,7 @@ from app.core.database import db
 from app.services.paciente_service import crear_paciente
 from app.utils.pacientes import obtener_paciente_para_nutriologo
 
-router = APIRouter(tags=["Pacientes"])
+router = APIRouter(tags=["Nutriólogo (Pacientes)"])
 
 @router.get("/pacientes", response_model=List[PacienteOut])
 async def listar_pacientes(current_user: dict = Depends(get_current_user)):

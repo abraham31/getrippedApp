@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.dependencies import get_current_user, require_role
 from app.schemas.nutriologo import NutriologoCreate
