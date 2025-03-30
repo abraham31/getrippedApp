@@ -25,6 +25,8 @@ class PacienteCreate(BaseModel):
     alimentos_desagrado: Optional[List[Dict[str, int]]] = None  # [{"alimento": "X", "nivel": 5}]
     horarios_alimentacion: Optional[str] = None
 
+class PacienteStatusUpdate(BaseModel):
+    is_active: bool
 
 class PacienteUpdate(BaseModel):
     nombre: Optional[str] = None
