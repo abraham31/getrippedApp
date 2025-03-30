@@ -3,7 +3,7 @@ from app.core.security import create_activation_token, verify_activation_token, 
 from app.services.email_service import send_activation_email
 from bson import ObjectId
 
-async def create_paciente(data: dict, nutriologo_id: str):
+async def crear_paciente(data: dict, nutriologo_id: str):
     existing = await db.usuarios.find_one({"email": data["email"]})
     if existing:
         return {"error": "Email ya registrado"}
@@ -26,16 +26,26 @@ async def create_paciente(data: dict, nutriologo_id: str):
     except:
         return {"error": "Error enviando email"}
 
-    return {"msg": "Paciente creado, email enviado."}
+    return {
+        "msg": "Paciente creado, email enviado.",
+        "activation_token": activation_token
+    }
 
 async def activate_paciente(token: str, password: str):
     try:
         payload = verify_activation_token(token)
-        paciente_id = payload["user_id"]
+        paciente_id = payload.get("user_id")
+        if not paciente_id:
+            return {"error": "Token inválido"}
     except:
         return {"error": "Token inválido o expirado"}
 
-    paciente = await db.usuarios.find_one({"_id": ObjectId(paciente_id)})
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "role": "paciente",
+        "is_deleted": False
+    })
+
     if not paciente:
         return {"error": "Paciente no encontrado"}
 

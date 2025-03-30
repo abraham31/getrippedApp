@@ -13,7 +13,7 @@ class PacienteCreate(BaseModel):
     telefono: Optional[str] = None
     actividad_laboral: Optional[str] = None
     actividad_fisica: Optional[str] = None
-    horario_constancia: Optional[str] = None
+    horario_constante: Optional[str] = None  # antes "horario_constancia"
     motivo_consulta: Optional[str] = None
     medicamentos: Optional[str] = None
     cirugias: Optional[str] = None
@@ -21,14 +21,10 @@ class PacienteCreate(BaseModel):
     antecedentes_heredofamiliares: Optional[str] = None
     consumo_sustancias: Optional[str] = None
     analisis_recientes: Optional[str] = None
-    alimentos_preferencia: Optional[List[str]] = None
+    alimentos_preferidos: Optional[List[str]] = None  # antes "alimentos_preferencia"
     alimentos_desagrado: Optional[List[Dict[str, int]]] = None  # [{"alimento": "X", "nivel": 5}]
     horarios_alimentacion: Optional[str] = None
-    is_active: bool
-    is_deleted: bool
 
-class PacienteActivate(BaseModel):
-    password: str = Field(..., min_length=6)
 
 class PacienteUpdate(BaseModel):
     nombre: Optional[str] = None
