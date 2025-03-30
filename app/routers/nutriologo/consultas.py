@@ -22,7 +22,8 @@ async def registrar_consulta(
         "_id": ObjectId(paciente_id),
         "nutriologo_id": current_user["sub"],
         "role": "paciente",
-        "is_deleted": False
+        "is_deleted": False,
+        "consulta_id": resultado["consulta"]["_id"]
     })
     if not paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")

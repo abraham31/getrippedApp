@@ -1,5 +1,8 @@
+from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
+
+from app.schemas.consulta import ProgresoOut
 
 class NotificacionResponse(BaseModel):
     id: str
@@ -7,16 +10,9 @@ class NotificacionResponse(BaseModel):
     mensaje: str
     fecha: datetime
     leido: bool
+    progreso: Optional[ProgresoOut] = None
 
     class Config:
         from_attributes = True
 
-class NotificacionPreview(BaseModel):
-    id: str
-    titulo: str
-    fecha: datetime
-    leido: bool
-
-    class Config:
-        from_attributes = True
 

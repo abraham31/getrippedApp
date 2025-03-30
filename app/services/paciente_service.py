@@ -1,7 +1,9 @@
+import io, textwrap
 from app.core.database import db
 from app.core.security import create_activation_token, verify_activation_token, hash_password
 from app.services.email_service import send_activation_email
 from bson import ObjectId
+from PIL import Image, ImageDraw, ImageFont
 
 async def crear_paciente(data: dict, nutriologo_id: str):
     existing = await db.usuarios.find_one({"email": data["email"]})
@@ -62,3 +64,60 @@ async def activate_paciente(token: str, password: str):
         }
     )
     return {"msg": "Cuenta activada correctamente"}
+
+def generar_resumen_visual(actual: dict, anterior: dict | None) -> list[str]:
+
+    if not anterior:
+        return ["¡Inicio registrado!", "Comienza tu camino de transformación."]
+
+    mensajes = []
+
+    def comparar_clave(clave, texto_positivo):
+        if clave in actual and clave in anterior:
+            dif = round(actual[clave] - anterior[clave], 2)
+            if dif < 0:
+                mensajes.append(f"{texto_positivo} {abs(dif)} kg.")
+            elif dif > 0 and clave == "masa_muscular":
+                mensajes.append(f"Ganaste {dif} kg de masa muscular 💪.")
+
+    comparar_clave("peso", "Bajaste")
+    comparar_clave("masa_grasa", "Reduciste grasa corporal 🔥")
+    comparar_clave("porcentaje_grasa_corporal", "Bajaste grasa corporal (%) 🏆")
+
+    return mensajes or ["¡Seguimos trabajando!", "No hubo cambios esta vez."]
+
+def generar_imagen_con_progreso(nombre_paciente: str, nombre_nutriologo: str, resumen: list[str]) -> bytes:
+    width, height = 1080, 1920
+    background_color = (255, 255, 255)
+
+    image = Image.new("RGB", (width, height), background_color)
+    draw = ImageDraw.Draw(image)
+
+    title_font = ImageFont.truetype("arial.ttf", 80)
+    subtitle_font = ImageFont.truetype("arial.ttf", 50)
+    text_font = ImageFont.truetype("arial.ttf", 40)
+
+    padding = 100
+    y = padding
+
+    draw.text((padding, y), "🎉 ¡Progreso alcanzado!", font=title_font, fill="black")
+    y += 150
+
+    draw.text((padding, y), f"{nombre_paciente}", font=subtitle_font, fill="black")
+    y += 100
+
+    for line in resumen:
+        wrapped = textwrap.wrap(line, width=30)
+        for l in wrapped:
+            draw.text((padding, y), l, font=text_font, fill="black")
+            y += 60
+        y += 20
+
+    # Branding abajo
+    branding = f"GetRippedApp / By {nombre_nutriologo}"
+    draw.text((padding, height - 100), branding, font=text_font, fill="gray")
+
+    output = io.BytesIO()
+    image.save(output, format="PNG")
+    output.seek(0)
+    return output.read()
