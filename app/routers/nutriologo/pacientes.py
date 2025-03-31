@@ -16,13 +16,27 @@ router = APIRouter(tags=["Nutriólogo (Pacientes)"])
 async def listar_pacientes(current_user: dict = Depends(get_current_user)):
     await require_role("nutriologo", current_user)
 
-    pacientes = await db.usuarios.find({
+    pacientes_raw = await db.usuarios.find({
         "nutriologo_id": current_user["sub"],
         "is_deleted": False,
         "role": "paciente"
     }).to_list(length=None)
 
+    pacientes = []
+    for p in pacientes_raw:
+        pacientes.append({
+            "id": str(p["_id"]),
+            "nombre": p.get("nombre"),
+            "email": p.get("email"),
+            "is_active": p.get("is_active"),
+            "sexo": p.get("sexo"),
+            "fecha_nacimiento": p.get("fecha_nacimiento"),
+            "peso": p.get("peso"),
+            "estatura": p.get("estatura"),
+        })
+
     return pacientes
+
 
 @router.get("/pacientes/{paciente_id}", response_model=PacienteOut)
 async def obtener_paciente(
