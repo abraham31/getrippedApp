@@ -46,16 +46,12 @@ async def obtener_citas_nutriologo(current_user: dict = Depends(get_current_user
         "estado": "activa"
     }).sort("fecha", 1).to_list(length=None)
 
-    return [
-        CitaOut(
-            id=str(c["_id"]),
-            paciente_id=str(c["paciente_id"]),
-            fecha=c["fecha"],
-            motivo=c["motivo"],
-            estado=c["estado"]
-        )
-        for c in citas
-    ]
+    # Convertir ObjectId a str
+    for c in citas:
+        c["_id"] = str(c["_id"])
+        c["paciente_id"] = str(c["paciente_id"])
+
+    return citas
 
 @router.put("/citas/{cita_id}")
 async def actualizar_cita(
