@@ -102,9 +102,11 @@ async def detalle_consulta(
         raise HTTPException(status_code=403, detail="No autorizado para ver esta consulta")
 
     return {
+        "_id": str(consulta["_id"]),
         "fecha": consulta["fecha"],
         "tipo": consulta["tipo"],
         "progreso": consulta["progreso"],
         "observaciones": consulta.get("observaciones")
     }
+
 
