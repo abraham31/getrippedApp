@@ -1,3 +1,4 @@
+from datetime import datetime, date
 import io, textwrap
 from app.core.database import db
 from app.core.security import create_activation_token, verify_activation_token, hash_password
@@ -11,6 +12,10 @@ async def crear_paciente(data: dict, nutriologo_id: str):
         return {"error": "Email ya registrado"}
 
     paciente = data.copy()
+
+    if isinstance(paciente.get("fecha_nacimiento"), date):
+        paciente["fecha_nacimiento"] = datetime.combine(paciente["fecha_nacimiento"], datetime.min.time())
+    
     paciente.update({
         "nutriologo_id": nutriologo_id,
         "role": "paciente",
