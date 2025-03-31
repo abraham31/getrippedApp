@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from bson import ObjectId
 
 def crear_consulta(paciente_id: str, nutriologo_id: str, data: dict, consultas_anteriores: list) -> dict:
@@ -20,11 +20,17 @@ def crear_consulta(paciente_id: str, nutriologo_id: str, data: dict, consultas_a
             titulo = "¡Seguimos trabajando!"
             mensaje = "No hubo cambios significativos esta vez."
 
+    fecha = data.get("fecha")
+    if fecha:
+        fecha = datetime.combine(fecha, datetime.min.time())
+    else:
+        fecha = datetime.utcnow()
+
     return {
         "consulta": {
             "paciente_id": ObjectId(paciente_id),
             "nutriologo_id": ObjectId(nutriologo_id),
-            "fecha": data.get("fecha") or datetime.utcnow().date(),
+            "fecha": fecha,
             "tipo": data.get("tipo"),
             "progreso": progreso,
             "observaciones": data.get("observaciones"),
