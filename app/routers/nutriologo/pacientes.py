@@ -45,9 +45,19 @@ async def obtener_paciente(
 ):
     await require_role("nutriologo", current_user)
 
-    paciente = await obtener_paciente_para_nutriologo(paciente_id, current_user["sub"])
+    paciente = await db.usuarios.find_one({
+        "_id": ObjectId(paciente_id),
+        "nutriologo_id": current_user["sub"],
+        "is_deleted": False,
+        "role": "paciente"
+    })
+
     if not paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
+
+    paciente["id"] = str(paciente["_id"])
+    del paciente["_id"]
+
     return paciente
 
 @router.put("/pacientes/{paciente_id}")
