@@ -99,11 +99,13 @@ async def generar_imagen_progreso(
     if not progreso:
         raise HTTPException(status_code=400, detail="Aún no hay un progreso registrado para generar una imagen.")
 
-    # Obtener consulta anterior
     consultas_previas = await db.consultas.find({
         "paciente_id": ObjectId(current_user["sub"]),
         "_id": {"$ne": consulta["_id"]}
     }).sort("fecha", -1).to_list(length=1)
+
+    if not consultas_previas:
+        raise HTTPException(status_code=400, detail="¡Aún no hay suficiente progreso! Espera a tener al menos dos consultas registradas para generar tu imagen 🎯")
 
     anterior = consultas_previas[0]["progreso"] if consultas_previas else None
     resumen = generar_resumen_visual(progreso, anterior)
