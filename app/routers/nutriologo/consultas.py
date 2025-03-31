@@ -22,8 +22,7 @@ async def registrar_consulta(
         "_id": ObjectId(paciente_id),
         "nutriologo_id": current_user["sub"],
         "role": "paciente",
-        "is_deleted": False,
-        "consulta_id": resultado["consulta"]["_id"]
+        "is_deleted": False
     })
     if not paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
@@ -36,14 +35,18 @@ async def registrar_consulta(
     # Generar consulta + notificación
     resultado = crear_consulta(paciente_id, current_user["sub"], data.dict(), consultas_anteriores)
 
-    # Guardar en base de datos
-    await db.consultas.insert_one(resultado["consulta"])
+    # Insertar la consulta y obtener su ID generado por MongoDB
+    insert_result = await db.consultas.insert_one(resultado["consulta"])
+    consulta_id = insert_result.inserted_id
+
+    # Insertar la notificación, vinculándola a la consulta
     await db.notificaciones.insert_one({
         "paciente_id": ObjectId(paciente_id),
         "titulo": resultado["notificacion"]["titulo"],
         "mensaje": resultado["notificacion"]["mensaje"],
         "fecha": datetime.utcnow(),
-        "leido": False
+        "leido": False,
+        "consulta_id": consulta_id
     })
 
     return {"msg": "Consulta registrada correctamente"}
