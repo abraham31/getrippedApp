@@ -73,6 +73,7 @@ async def obtener_historial_consultas(
 
     return [
         {
+            "id": str(c["_id"]),
             "fecha": c["fecha"],
             "tipo": c["tipo"],
             "progreso": c["progreso"],

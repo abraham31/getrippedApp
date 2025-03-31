@@ -26,7 +26,11 @@ class ProgresoOut(BaseModel):
     agua_corporal_total: Optional[float]
 
 class ConsultaOut(BaseModel):
+    id: str = Field(..., alias="_id")
     fecha: date
     tipo: str
     progreso: ProgresoOut
-    observaciones: Optional[str]
+    observaciones: Optional[str] = None
+
+    class Config:
+        populate_by_name = True
