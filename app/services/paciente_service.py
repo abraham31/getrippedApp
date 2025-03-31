@@ -98,9 +98,9 @@ def generar_imagen_con_progreso(nombre_paciente: str, nombre_nutriologo: str, re
     image = Image.new("RGB", (width, height), background_color)
     draw = ImageDraw.Draw(image)
 
-    title_font = ImageFont.truetype("arial.ttf", 80)
-    subtitle_font = ImageFont.truetype("arial.ttf", 50)
-    text_font = ImageFont.truetype("arial.ttf", 40)
+    title_font = ImageFont.load_default()
+    subtitle_font = ImageFont.load_default()
+    text_font = ImageFont.load_default()
 
     padding = 100
     y = padding

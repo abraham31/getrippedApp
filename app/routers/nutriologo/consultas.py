@@ -52,7 +52,7 @@ async def registrar_consulta(
     return {"msg": "Consulta registrada correctamente"}
 
 @router.get("/pacientes/{paciente_id}/consultas", response_model=List[ConsultaOut])
-async def obtener_historial_consultas(
+async def obtener_consultas(
     paciente_id: str,
     current_user: dict = Depends(get_current_user)
 ):
