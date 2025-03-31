@@ -46,18 +46,16 @@ async def obtener_citas_nutriologo(current_user: dict = Depends(get_current_user
         "estado": "activa"
     }).sort("fecha", 1).to_list(length=None)
 
-    return [CitaOut(**c) for c in citas]
-
-@router.get("/citas/historial", response_model=List[CitaOut])
-async def historial_citas_nutriologo(current_user: dict = Depends(get_current_user)):
-    await require_role("nutriologo", current_user)
-
-    citas = await db.citas.find({
-        "nutriologo_id": ObjectId(current_user["sub"]),
-        "estado": {"$in": ["cancelada", "finalizada"]}
-    }).sort("fecha", -1).to_list(length=None)
-
-    return [CitaOut(**c) for c in citas]
+    return [
+        CitaOut(
+            id=str(c["_id"]),
+            paciente_id=str(c["paciente_id"]),
+            fecha=c["fecha"],
+            motivo=c["motivo"],
+            estado=c["estado"]
+        )
+        for c in citas
+    ]
 
 @router.put("/citas/{cita_id}")
 async def actualizar_cita(
