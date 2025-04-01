@@ -4,6 +4,7 @@ from fastapi.openapi.utils import get_openapi
 from app.routers.nutriologo.pacientes import router as pacientes_router
 from app.routers.nutriologo.consultas import router as consultas_router
 from app.routers.nutriologo.citas import router as citas_router
+from app.routers.nutriologo.ingredientes import router as ingredientes_router
 from app.routers import admin_router, auth_router, paciente_router, nutriologo_router
 
 app = FastAPI(title="API Nutrición")
@@ -16,6 +17,7 @@ app.include_router(nutriologo_router.router)
 app.include_router(pacientes_router, prefix="/nutriologo")
 app.include_router(consultas_router, prefix="/nutriologo")
 app.include_router(citas_router, prefix="/nutriologo")
+app.include_router(ingredientes_router, prefix="/nutriologo")
 
 # Seguridad para Swagger (HTTP Bearer)
 bearer_scheme = HTTPBearer()
