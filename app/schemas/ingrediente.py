@@ -10,6 +10,14 @@ class IngredienteCreate(BaseModel):
     enlace_producto: Optional[str] = None
     costo_extra: Optional[float] = Field(0, ge=0, example=50.0)
 
+class IngredienteUpdate(BaseModel):
+    nombre: Optional[str]
+    unidad: Optional[str]
+    es_tienda: Optional[bool]
+    link: Optional[str]
+    costo_extra: Optional[float] = Field(None, ge=0)
+
+
 class IngredienteOut(BaseModel):
     id: str = Field(..., alias="_id")
     nombre: str

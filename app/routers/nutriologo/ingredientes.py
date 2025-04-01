@@ -1,7 +1,8 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from bson import ObjectId
+from fastapi import APIRouter, Depends, Path, HTTPException, Query
 from app.dependencies import get_current_user, require_role
-from app.schemas.ingrediente import IngredienteCreate, IngredienteOut
+from app.schemas.ingrediente import IngredienteCreate, IngredienteOut, IngredienteUpdate
 from app.core.database import db
 
 router = APIRouter(tags=["Ingredientes"])
@@ -19,6 +20,28 @@ async def crear_ingrediente(
 
     await db.ingredientes.insert_one(ingrediente.dict())
     return {"msg": "Ingrediente registrado correctamente"}
+
+@router.put("/ingredientes/{ingrediente_id}")
+async def actualizar_ingrediente(
+    ingrediente_id: str = Path(..., description="ID del ingrediente"),
+    data: IngredienteUpdate = ...,
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No hay datos para actualizar")
+
+    result = await db.ingredientes.update_one(
+        {"_id": ObjectId(ingrediente_id)},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+
+    return {"msg": "Ingrediente actualizado correctamente"}
 
 
 @router.get("/ingredientes", response_model=List[IngredienteOut])
