@@ -2,9 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date
 
-from pydantic import BaseModel, Field
-from typing import Optional
-
 class ProgresoInput(BaseModel):
     peso: float = Field(..., gt=0, description="Peso actual del paciente en kg")
     masa_muscular: Optional[float] = Field(None, gt=0, description="Masa muscular actual en kg")
