@@ -71,54 +71,85 @@ async def activate_paciente(token: str, password: str):
     return {"msg": "Cuenta activada correctamente"}
 
 def generar_resumen_visual(actual: dict, anterior: dict | None) -> list[str]:
-
     if not anterior:
-        return ["¡Inicio registrado!", "Comienza tu camino de transformación."]
+        return [
+            "🎯 ¡Inicio registrado!",
+            "Comienza tu camino de transformación. ¡Vamos con todo!"
+        ]
 
     mensajes = []
 
-    def comparar_clave(clave, texto_positivo):
+    def comparar_clave(clave, texto_positivo, unidad="kg", emoji=""):
         if clave in actual and clave in anterior:
             dif = round(actual[clave] - anterior[clave], 2)
             if dif < 0:
-                mensajes.append(f"{texto_positivo} {abs(dif)} kg.")
+                mensajes.append(f"{texto_positivo} {abs(dif)} {unidad} {emoji}")
             elif dif > 0 and clave == "masa_muscular":
-                mensajes.append(f"Ganaste {dif} kg de masa muscular 💪.")
+                mensajes.append(f"Ganaste {dif} {unidad} de masa muscular 💪")
 
-    comparar_clave("peso", "Bajaste")
-    comparar_clave("masa_grasa", "Reduciste grasa corporal 🔥")
-    comparar_clave("porcentaje_grasa_corporal", "Bajaste grasa corporal (%) 🏆")
+    comparar_clave("peso", "Bajaste", "kg", "📉")
+    comparar_clave("masa_grasa", "Reduciste grasa corporal", "kg", "🔥")
+    comparar_clave("porcentaje_grasa_corporal", "Bajaste grasa corporal (%)", "%", "🏆")
 
-    return mensajes or ["¡Seguimos trabajando!", "No hubo cambios esta vez."]
+    if not mensajes:
+        mensajes.append("¡Seguimos avanzando! A veces el cambio no se ve, pero cuenta 💪")
 
-def generar_imagen_con_progreso(nombre_paciente: str, nombre_nutriologo: str, resumen: list[str]) -> bytes:
+    return mensajes
+
+def generar_resumen_visual_semana(porcentaje: float, total: int, cumplidas: int) -> list[str]:
+    mensajes = [
+        f"🍽️ Total de comidas esta semana: {total}",
+        f"✅ Comidas cumplidas: {cumplidas}",
+        f"📊 Cumplimiento: {porcentaje}%"
+    ]
+
+    if porcentaje >= 90:
+        mensajes.append("¡Excelente semana! Tu compromiso es increíble 💪🔥")
+    elif porcentaje >= 75:
+        mensajes.append("¡Muy bien! Estás haciendo un gran esfuerzo 🥗👏")
+    elif porcentaje >= 50:
+        mensajes.append("Vamos por más la próxima semana 💥")
+    else:
+        mensajes.append("Lo importante es seguir intentando. ¡Tú puedes! 🚀")
+
+    return mensajes
+
+def generar_imagen_con_progreso(
+    nombre_paciente: str,
+    nombre_nutriologo: str,
+    resumen: list[str],
+    tipo: str = "progreso"
+) -> bytes:
     width, height = 1080, 1920
     background_color = (255, 255, 255)
 
     image = Image.new("RGB", (width, height), background_color)
     draw = ImageDraw.Draw(image)
 
-    title_font = ImageFont.load_default()
-    subtitle_font = ImageFont.load_default()
-    text_font = ImageFont.load_default()
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 80)
+        subtitle_font = ImageFont.truetype("arial.ttf", 50)
+        text_font = ImageFont.truetype("arial.ttf", 40)
+    except:
+        title_font = subtitle_font = text_font = ImageFont.load_default()
 
-    padding = 100
-    y = padding
+    y = 100
+    padding = 80
 
-    draw.text((padding, y), "🎉 ¡Progreso alcanzado!", font=title_font, fill="black")
+    titulo = "🎯 ¡Progreso alcanzado!" if tipo == "progreso" else "📅 Resumen semanal"
+    draw.text((padding, y), titulo, font=title_font, fill="black")
     y += 150
 
     draw.text((padding, y), f"{nombre_paciente}", font=subtitle_font, fill="black")
     y += 100
 
-    for line in resumen:
-        wrapped = textwrap.wrap(line, width=30)
+    for linea in resumen:
+        wrapped = textwrap.wrap(linea, width=30)
         for l in wrapped:
             draw.text((padding, y), l, font=text_font, fill="black")
             y += 60
         y += 20
 
-    # Branding abajo
     branding = f"GetRippedApp / By {nombre_nutriologo}"
     draw.text((padding, height - 100), branding, font=text_font, fill="gray")
 

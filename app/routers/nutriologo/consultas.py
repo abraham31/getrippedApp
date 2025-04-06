@@ -1,3 +1,4 @@
+from calendar import c
 from datetime import datetime
 from typing import List
 from bson import ObjectId
@@ -46,7 +47,8 @@ async def registrar_consulta(
         "mensaje": resultado["notificacion"]["mensaje"],
         "fecha": datetime.utcnow(),
         "leido": False,
-        "consulta_id": consulta_id
+        "consulta_id": consulta_id,
+        "tipo": "progreso"
     })
 
     return {"msg": "Consulta registrada correctamente"}

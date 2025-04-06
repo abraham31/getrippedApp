@@ -52,3 +52,24 @@ class PacienteOut(BaseModel):
     fecha_nacimiento: Optional[date] = None
     peso: Optional[float] = None
     estatura: Optional[float] = None
+
+
+class ComidaCumplida(BaseModel):
+    nombre: str  # Ej: "desayuno", "colación 1"
+    cumplido: bool
+
+class CumplimientoDia(BaseModel):
+    dia: str  # Ej: "Lunes", "Martes"
+    comidas: List[ComidaCumplida]
+
+class CumplimientoSemana(BaseModel):
+    semana: int  # Ej: 1, 2, 3 según el número de la semana del plan
+    cumplimiento: List[CumplimientoDia]
+
+class ComidaCumplidaInput(BaseModel):
+    nombre: str  # Ej: "desayuno", "colación 1"
+    cumplido: bool
+
+class CumplimientoDiaInput(BaseModel):
+    dia: str  # Ej: "Lunes"
+    comidas: List[ComidaCumplidaInput]
