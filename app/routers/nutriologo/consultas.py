@@ -106,7 +106,8 @@ async def detalle_consulta(
         "fecha": consulta["fecha"],
         "tipo": consulta["tipo"],
         "progreso": consulta["progreso"],
-        "observaciones": consulta.get("observaciones")
+        "observaciones": consulta.get("observaciones"),
+        "plan_id": str(c["plan_id"]) if "plan_id" in c else None
     }
 
 

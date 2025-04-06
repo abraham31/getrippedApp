@@ -7,33 +7,86 @@ from app.schemas.planalimenticio import PlanAlimenticio
 
 router = APIRouter(tags=["Consulta"])
 
-
-@router.post("/pacientes/{paciente_id}/plan-alimenticio")
-async def crear_plan_alimenticio(
-    paciente_id: str = Path(..., description="ID del paciente"),
-    plan: PlanAlimenticio = Body(...),
+@router.post("/consultas/{consulta_id}/plan")
+async def asignar_plan_alimenticio(
+    consulta_id: str = Path(..., description="ID de la consulta"),
+    plan: PlanAlimenticio = ...,
     current_user: dict = Depends(get_current_user)
 ):
     await require_role("nutriologo", current_user)
 
-    # Validar que el paciente pertenezca al nutriólogo
-    paciente = await db.usuarios.find_one({
-        "_id": ObjectId(paciente_id),
-        "nutriologo_id": current_user["sub"],
-        "role": "paciente",
-        "is_deleted": False
+    # Buscar la consulta
+    consulta = await db.consultas.find_one({
+        "_id": ObjectId(consulta_id),
+        "nutriologo_id": ObjectId(current_user["sub"])
     })
-    if not paciente:
-        raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
-    # Crear documento
-    documento = {
-        "paciente_id": ObjectId(paciente_id),
-        "nutriologo_id": ObjectId(current_user["sub"]),
-        "plan": plan.dict(by_alias=True),
-        "fecha_creacion": datetime.utcnow()
-    }
+    if not consulta:
+        raise HTTPException(status_code=404, detail="Consulta no encontrada")
 
-    await db.planes_alimenticios.insert_one(documento)
+    # Insertar plan
+    plan_dict = plan.dict()
+    plan_dict["created_at"] = datetime.utcnow()
+    result = await db.planes.insert_one(plan_dict)
 
-    return {"msg": "Plan alimenticio registrado correctamente"}
+    # Actualizar consulta con el ID del plan
+    await db.consultas.update_one(
+        {"_id": ObjectId(consulta_id)},
+        {"$set": {"plan_id": result.inserted_id}}
+    )
+
+    return {"msg": "Plan alimenticio asignado exitosamente", "plan_id": str(result.inserted_id)}
+
+@router.get("/consultas/{consulta_id}/plan", response_model=PlanAlimenticio)
+async def obtener_plan_alimenticio(
+    consulta_id: str = Path(..., description="ID de la consulta"),
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    consulta = await db.consultas.find_one({
+        "_id": ObjectId(consulta_id),
+        "nutriologo_id": ObjectId(current_user["sub"])
+    })
+
+    if not consulta:
+        raise HTTPException(status_code=404, detail="Consulta no encontrada")
+
+    plan_id = consulta.get("plan_id")
+    if not plan_id:
+        raise HTTPException(status_code=404, detail="Esta consulta no tiene un plan asignado")
+
+    plan = await db.planes.find_one({"_id": plan_id})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan alimenticio no encontrado")
+
+    return plan
+
+@router.put("/consultas/{consulta_id}/plan", response_model=dict)
+async def actualizar_plan_alimenticio(
+    consulta_id: str = Path(..., description="ID de la consulta"),
+    plan: PlanAlimenticio = ...,
+    current_user: dict = Depends(get_current_user)
+):
+    await require_role("nutriologo", current_user)
+
+    consulta = await db.consultas.find_one({
+        "_id": ObjectId(consulta_id),
+        "nutriologo_id": ObjectId(current_user["sub"])
+    })
+
+    if not consulta:
+        raise HTTPException(status_code=404, detail="Consulta no encontrada")
+
+    # Crear nuevo plan
+    plan_dict = plan.dict()
+    plan_dict["created_at"] = datetime.utcnow()
+    nuevo_plan = await db.planes.insert_one(plan_dict)
+
+    # Actualizar la consulta con el nuevo plan
+    await db.consultas.update_one(
+        {"_id": ObjectId(consulta_id)},
+        {"$set": {"plan_id": nuevo_plan.inserted_id}}
+    )
+
+    return {"msg": "Plan alimenticio actualizado correctamente", "plan_id": str(nuevo_plan.inserted_id)}

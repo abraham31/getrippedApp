@@ -19,5 +19,6 @@ class DiaPlan(BaseModel):
 
 class PlanAlimenticio(BaseModel):
     dias: List[DiaPlan]
+    semanas_de_plan: int
 
 IngredientePlan.update_forward_refs()

@@ -28,6 +28,7 @@ class ConsultaOut(BaseModel):
     tipo: str
     progreso: ProgresoOut
     observaciones: Optional[str] = None
+    plan_id: Optional[str] = None
 
     class Config:
         populate_by_name = True
