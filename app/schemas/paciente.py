@@ -73,3 +73,12 @@ class ComidaCumplidaInput(BaseModel):
 class CumplimientoDiaInput(BaseModel):
     dia: str  # Ej: "Lunes"
     comidas: List[ComidaCumplidaInput]
+
+class SeleccionIngrediente(BaseModel):
+    dia: str
+    comida: str
+    ingrediente: str
+    seleccionado: dict  # Debe incluir al menos nombre y cantidad
+
+class SeleccionesPaciente(BaseModel):
+    selecciones: List[SeleccionIngrediente]

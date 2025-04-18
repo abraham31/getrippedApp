@@ -157,3 +157,42 @@ def generar_imagen_con_progreso(
     image.save(output, format="PNG")
     output.seek(0)
     return output.read()
+
+def generar_imagen_con_resumen_semanal(nombre_paciente: str, nombre_nutriologo: str, resumen: list[str]) -> bytes:
+    width, height = 1080, 1920
+    background_color = (255, 255, 255)
+
+    image = Image.new("RGB", (width, height), background_color)
+    draw = ImageDraw.Draw(image)
+
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 80)
+        subtitle_font = ImageFont.truetype("arial.ttf", 50)
+        text_font = ImageFont.truetype("arial.ttf", 40)
+    except:
+        title_font = subtitle_font = text_font = ImageFont.load_default()
+
+    padding = 100
+    y = padding
+
+    draw.text((padding, y), "📅 Resumen Semanal", font=title_font, fill="black")
+    y += 150
+
+    draw.text((padding, y), f"{nombre_paciente}", font=subtitle_font, fill="black")
+    y += 100
+
+    for line in resumen:
+        wrapped = textwrap.wrap(line, width=30)
+        for l in wrapped:
+            draw.text((padding, y), l, font=text_font, fill="black")
+            y += 60
+        y += 20
+
+    # Branding abajo
+    branding = f"GetRippedApp / By {nombre_nutriologo}"
+    draw.text((padding, height - 100), branding, font=text_font, fill="gray")
+
+    output = io.BytesIO()
+    image.save(output, format="PNG")
+    output.seek(0)
+    return output.read()

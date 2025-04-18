@@ -7,6 +7,7 @@ class IngredientePlan(BaseModel):
     producto_id: Optional[str] = None  # Si viene de la tienda
     alternativas: Optional[List["IngredientePlan"]] = None  # Ingredientes alternativos
     link_producto: Optional[str] = None
+    seleccionado: Optional["IngredientePlan"] = None 
 
 class TiempoComidaPlan(BaseModel):
     nombre: str  # ejemplo: desayuno, comida, colación, etc.
