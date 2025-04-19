@@ -37,7 +37,6 @@ async def listar_pacientes(current_user: dict = Depends(get_current_user)):
 
     return pacientes
 
-
 @router.get("/pacientes/{paciente_id}", response_model=PacienteOut)
 async def obtener_paciente(
     paciente_id: str,

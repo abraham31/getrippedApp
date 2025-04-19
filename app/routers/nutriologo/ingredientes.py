@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Path, HTTPException, Query
 from app.dependencies import get_current_user, require_role
 from app.schemas.ingrediente import IngredienteCreate, IngredienteOut, IngredienteUpdate
 from app.core.database import db
+from app.schemas.product import ProductoRecomendadoOut
 
 router = APIRouter(tags=["Ingredientes"])
 
@@ -43,7 +44,6 @@ async def actualizar_ingrediente(
 
     return {"msg": "Ingrediente actualizado correctamente"}
 
-
 @router.get("/ingredientes", response_model=List[IngredienteOut])
 async def listar_ingredientes(nombre: Optional[str] = Query(None, description="Filtro por nombre")):
     filtro = {}
@@ -52,3 +52,23 @@ async def listar_ingredientes(nombre: Optional[str] = Query(None, description="F
 
     ingredientes = await db.ingredientes.find(filtro).sort("nombre", 1).to_list(length=20)
     return [{**i, "id": str(i["_id"])} for i in ingredientes]
+
+@router.get("/productos-recomendados", response_model=List[ProductoRecomendadoOut])
+async def listar_productos_recomendados(current_user: dict = Depends(get_current_user)):
+    # Cualquier usuario autenticado puede ver esta lista
+    productos = await db.productos_recomendados.find().to_list(length=None)
+
+@router.get("/productos-recomendados", response_model=List[ProductoRecomendadoOut])
+async def listar_productos_recomendados(
+    nombre: Optional[str] = Query(None, description="Buscar por nombre"),
+    marca: Optional[str] = Query(None, description="Buscar por marca"),
+    current_user: dict = Depends(get_current_user)
+):
+    filtro = {}
+    if nombre:
+        filtro["nombre"] = {"$regex": nombre, "$options": "i"}
+    if marca:
+        filtro["marca"] = {"$regex": marca, "$options": "i"}
+
+    productos = await db.productos_recomendados.find(filtro).to_list(length=None)
+    return productos
